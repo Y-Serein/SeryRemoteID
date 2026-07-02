@@ -1,0 +1,4 @@
+idf_component_register(
+    SRCS "monocypher.c"
+    INCLUDE_DIRS "."
+)
