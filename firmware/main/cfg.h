@@ -13,6 +13,12 @@ typedef struct {
 } rid_public_key_t;
 
 typedef enum {
+    RID_INPUT_PROFILE_GENERIC_MAVLINK = 0,
+    RID_INPUT_PROFILE_LINGDONG_A7 = 1,
+    RID_INPUT_PROFILE_CUSTOM_MAVLINK = 2,
+} rid_input_profile_t;
+
+typedef enum {
     RID_PARAM_NONE = 0,
     RID_PARAM_UINT8,
     RID_PARAM_INT8,
@@ -41,6 +47,7 @@ typedef struct {
     int8_t lock_level;
     uint8_t can_node;
     uint8_t can_terminate;
+    uint8_t input_profile;
     uint32_t uart_baud;
     int uart_tx_gpio;
     int uart_rx_gpio;

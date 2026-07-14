@@ -40,6 +40,7 @@ typedef struct {
 static StackType_t s_mavlink_stack[SERY_RID_TASK_STACK_WORDS];
 static StaticTask_t s_mavlink_tcb;
 static uint8_t s_system_id;
+static rid_mavlink_diagnostics_t s_diagnostics;
 
 static rid_mavlink_link_t s_links[] = {
     {
@@ -60,6 +61,12 @@ static rid_mavlink_link_t s_links[] = {
 
 uint8_t rid_mavlink_system_id(void) {
     return s_system_id;
+}
+
+void rid_mavlink_get_diagnostics(rid_mavlink_diagnostics_t *out) {
+    if (out) {
+        *out = s_diagnostics;
+    }
 }
 
 static void send_mavlink_message(rid_mavlink_link_t *link, const mavlink_message_t *msg) {
@@ -518,9 +525,24 @@ static int read_link(rid_mavlink_link_t *link, uint8_t *rx, size_t rx_len) {
 static void service_link_rx(rid_mavlink_link_t *link, uint8_t *rx, size_t rx_len) {
     mavlink_message_t msg;
     int n = read_link(link, rx, rx_len);
+    if (n > 0 && link->type == RID_MAVLINK_LINK_UART) {
+        s_diagnostics.rx_bytes += (uint32_t)n;
+    }
     for (int i = 0; i < n; i++) {
+        uint8_t parse_errors = link->parse_status.parse_error;
         if (mavlink_parse_char((uint8_t)link->channel, rx[i], &msg, &link->parse_status)) {
+            if (link->type == RID_MAVLINK_LINK_UART) {
+                s_diagnostics.valid_frames++;
+                s_diagnostics.last_frame_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+                s_diagnostics.last_message_id = msg.msgid;
+                s_diagnostics.last_system_id = msg.sysid;
+                s_diagnostics.last_component_id = msg.compid;
+            }
             process_packet(link, &msg);
+        }
+        if (link->type == RID_MAVLINK_LINK_UART &&
+            link->parse_status.parse_error != parse_errors) {
+            s_diagnostics.parse_errors++;
         }
     }
 }
@@ -622,6 +644,7 @@ static void configure_usb_serial_jtag_link(void) {
 esp_err_t rid_mavlink_start(void) {
     const rid_config_t *cfg = cfg_get();
     s_system_id = cfg->mavlink_sysid;
+    memset(&s_diagnostics, 0, sizeof(s_diagnostics));
 
     const uart_config_t uart_config = {
         .baud_rate = (int)cfg->uart_baud,

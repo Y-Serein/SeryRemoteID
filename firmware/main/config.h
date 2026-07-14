@@ -6,7 +6,7 @@
 
 #include "driver/uart.h"
 
-/* Default board profile: ESP32-S3 dev board, matching ArduRemoteID's S3 pins. */
+/* Default board profile for the SeryRemoteID ESP32-S3 hardware. */
 #define SERY_RID_UART_PORT              UART_NUM_1
 #define SERY_RID_UART_TX_GPIO           18
 #define SERY_RID_UART_RX_GPIO           17
@@ -18,7 +18,7 @@
 #define SERY_RID_WIFI_NAN_RATE_HZ       1.0f
 #define SERY_RID_WIFI_BEACON_RATE_HZ    1.0f
 #define SERY_RID_WIFI_SSID_PREFIX       "RID"
-#define SERY_RID_WIFI_PASSWORD_DEFAULT  "ArduRemoteID"
+#define SERY_RID_WIFI_PASSWORD_DEFAULT  "SeryRemoteID0108"
 
 #define SERY_RID_BT4_RATE_HZ            1.0f
 #define SERY_RID_BT4_POWER_DBM_DEFAULT  18.0f
